@@ -1,0 +1,103 @@
+﻿@page "/books"
+@using AuthorBlazor.Data
+@using AuthorBlazor.Model
+@inject ICloudService CloudService
+
+<h3>Books</h3>
+
+<p>
+    Filter by Title: <input type="text" @oninput="@((arg) => FilterByTitle(arg))" style="width:150px" />
+</p>
+<p>
+    Filter by First Name: <input type="text" @oninput="@((arg) => FilterByFirstName(arg))" style="width:150px" />
+</p>
+<p>
+    Filter by Last Name: <input type="text" @oninput="@((arg) => FilterByLastName(arg))" style="width:150px" />
+</p>
+
+@if (bookListToShow == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else if (!bookListToShow.Any())
+{
+    <p>
+        <em>No books exist. Please add some.</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ISBN</th>
+                <th>Title</th>
+                <th>Publication Year</th>
+                <th>Pages</th>
+                <th>Genre</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in bookListToShow)
+            {
+            <tr>
+                <td>@item.ISBN</td>
+                <td>@item.Title</td>
+                <td>@item.PublicationYear</td>
+                <td>@item.NumOfPages</td>
+                <td>@item.Genre</td>
+                <td>
+                    <button @onclick="@(() => RemoveBook(item.ISBN))">
+                        <i class="oi oi-trash" style="color:red" />
+                    </button>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+    @code {
+        private IList<Book> bookListToShow;
+        private IList<Book> bookListAll;
+
+        private string? filterByTitle;
+        private string? filterByFirstName;
+        private string? filterByLastName;
+
+        protected override async Task OnInitializedAsync()
+        {
+            bookListAll = await CloudService.GetBooks();
+            bookListToShow = bookListAll;
+        }
+
+        private async Task RemoveBook(int isbn)
+        {
+            Book bookToRemove = bookListToShow.First(b => b.ISBN == isbn);
+            await CloudService.DeleteBook(isbn);
+            bookListToShow.Remove(bookToRemove);
+        }
+
+        private void FilterByTitle(ChangeEventArgs changeEventArgs)
+        {
+            filterByTitle = null;
+            filterByTitle = changeEventArgs.Value.ToString();
+            bookListToShow = bookListAll.Where(e => (filterByTitle != null && e.Title.Equals(filterByTitle))).ToList();
+        }
+
+        private void FilterByFirstName(ChangeEventArgs changeEventArgs)
+        {
+            filterByTitle = null;
+            filterByTitle = changeEventArgs.Value.ToString();
+            bookListToShow = bookListAll.Where(e => (filterByTitle != null && e.Title.Equals(filterByTitle))).ToList();
+        }
+
+        private void FilterByLastName(ChangeEventArgs changeEventArgs)
+        {
+            filterByTitle = null;
+            filterByTitle = changeEventArgs.Value.ToString();
+            bookListToShow = bookListAll.Where(e => (filterByTitle != null && e.Title.Equals(filterByTitle))).ToList();
+        }
+    }
